@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMO Sentiment Interface</title>
+    <link href="https://db.onlinewebfonts.com/c/8241a291f471ac05fe15e030a686e849?family=NorB+Casual+W05+Heavy" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #87CEEB, #98E4D6);
+            font-family: 'NorB Casual W05 Heavy', 'Comic Sans MS', cursive, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .bmo-container {
+            width: 340px;
+            height: 480px;
+            background: linear-gradient(145deg, #B8E6B8, #A0D4A0);
+            border: 2px solid #2F4F2F;
+            border-radius: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 280px;
+            height: 200px;
+            background: linear-gradient(145deg, #E8F5E8, #D0F0D0);
+            border: 3px solid #2F4F2F;
+            border-radius: 15px;
+            margin: 20px auto 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .eyes {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .eye {
+            width: 20px;
+            height: 15px;
+            background: #000;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .mouth {
+            width: 60px;
+            height: 30px;
+            border: 3px solid #000;
+            border-radius: 0 0 60px 60px;
+            border-top: none;
+            background: #4CAF50;
+            transition: all 0.3s ease;
+        }
+
+        /* Emotion states */
+        .happy .eye {
+            transform: scaleY(0.3);
+            border-radius: 50% 50% 0 0;
+        }
+        .happy .mouth {
+            background: #4CAF50;
+            transform: scale(1.2);
+        }
+
+        .questioning .eye {
+            width: 15px;
+            height: 20px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-15deg);
+        }
+        .questioning .mouth {
+            background: #FF9800;
+            border-radius: 30px;
+            width: 40px;
+            height: 20px;
+        }
+
+        .interested .eye {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+        }
+        .interested .mouth {
+            background: #2196F3;
+            border-radius: 50%;
+            width: 30px;
+            height: 20px;
+        }
+
+        .thinking .eye {
+            width: 18px;
+            height: 18px;
+            transform: translateX(-5px);
+        }
+        .thinking .mouth {
+            background: #9C27B0;
+            width: 50px;
+            height: 15px;
+            border-radius: 25px;
+        }
+
+        .fun .eye {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #000 40%, transparent 50%);
+            animation: sparkle 0.8s ease-in-out infinite alternate;
+        }
+        .fun .mouth {
+            background: #E91E63;
+            transform: scale(1.3);
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+
+        .processing .eye {
+            width: 22px;
+            height: 22px;
+            background: #000;
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        .processing .mouth {
+            background: #9E9E9E;
+            width: 40px;
+            height: 25px;
+            border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "Processing!"; }
+            40% { content: "Processing!."; }
+            60% { content: "Processing!.."; }
+            80%, 100% { content: "Processing!..."; }
+        }
+
+        .processing-text {
+            color: transparent;
+        }
+        .processing-text::after {
+            color: #2F4F2F;
+            animation: dots 2s infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(1.3) translateY(0); }
+            100% { transform: scale(1.3) translateY(-3px); }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(145deg, #A0D4A0, #8FC08F);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+            height: 120px;
+            margin-bottom: 15px;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #2F4F2F;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 18px;
+            background: #F0FFF0;
+            resize: none;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .analyze-btn, .clear-btn {
+            padding: 18px 20px;
+            color: white;
+            border: 2px solid #2F4F2F;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 18px;
+            height: 56px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .analyze-btn {
+            background: #4A90E2;
+        }
+
+        .analyze-btn:hover {
+            background: #357ABD;
+        }
+
+        .clear-btn {
+            background: #FFD700;
+            color: #2F4F2F;
+        }
+
+        .clear-btn:hover {
+            background: #FFC107;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 18px;
+            color: #2F4F2F;
+            margin: 0;
+            padding: 8px 0;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="bmo-container">
+        <div class="screen">
+            <div class="face" id="bmoFace">
+                <div class="eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+                <div class="mouth"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="input-area">
+                <textarea class="text-input" id="textInput" placeholder="Tell BMO something..." rows="3"></textarea>
+                <div class="button-group">
+                    <button class="analyze-btn" onclick="analyzeSentiment()">Tell me!</button>
+                    <button class="clear-btn" onclick="clearInput()">Clear</button>
+                </div>
+            </div>
+            
+            <div class="status" id="status">BMO: Ooooh yay! That sounds exciting!</div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmotion = 'happy';
+
+        function setEmotion(emotion) {
+            const face = document.getElementById('bmoFace');
+            const status = document.getElementById('status');
+            
+            face.className = `face ${emotion}`;
+            currentEmotion = emotion;
+            
+            const messages = {
+                happy: "BMO: Ooooh yay! That sounds exciting!",
+                questioning: "BMO: Hmm, I don't know about this one!",
+                interested: "BMO: Very interesting! Let's get to the core of this idea!",
+                thinking: "BMO: BMO is thinking... one moment please!",
+                fun: "BMO: Ooooh ahahahaha yay!",
+                processing: "Processing!"
+            };
+            
+            if (emotion === 'processing') {
+                status.className = 'status processing-text';
+                status.textContent = ''; // Empty since CSS animation handles the text
+            } else {
+                status.className = 'status';
+                status.textContent = messages[emotion];
+            }
+        }
+
+        function analyzeSentiment() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                setEmotion('thinking');
+                return;
+            }
+
+            // Show processing state first
+            setEmotion('processing');
+            
+            // Simulate processing time then analyze
+            setTimeout(() => {
+                const emotion = getEmotionFromText(text);
+                setEmotion(emotion);
+            }, 1500);
+        }
+
+        function getEmotionFromText(text) {
+            const lowerText = text.toLowerCase();
+            
+            // Check for problematic content first (BMO's safety sensors)
+            const concerningWords = ['hate', 'kill', 'violence', 'racism', 'inappropriate', 'stupid', 'dumb', 'idiot', 'hurt', 'mean'];
+            if (concerningWords.some(word => lowerText.includes(word))) {
+                return 'questioning';
+            }
+            
+            // BMO LOVES these things - immediate fun response!
+            const bmoFavorites = ['cookies', 'cake', 'candy', 'music', 'song', 'dance', 'party', 'adventure', 'friends', 'finn', 'jake', 'games', 'play', 'fun', 'snacks', 'treats', 'hugs'];
+            if (bmoFavorites.some(word => lowerText.includes(word))) {
+                return 'fun';
+            }
+            
+            // Obviously positive things that make BMO happy
+            const positiveThings = ['tasty', 'delicious', 'yummy', 'good', 'nice', 'beautiful', 'pretty', 'cute', 'love', 'like', 'enjoy', 'happy', 'smile', 'laugh', 'sunny', 'warm'];
+            if (positiveThings.some(word => lowerText.includes(word))) {
+                return 'happy';
+            }
+            
+            // Exciting/energetic content - BMO gets pumped!
+            const excitingWords = ['awesome', 'amazing', 'fantastic', 'incredible', 'wow', 'cool', 'great', 'excellent', 'brilliant', 'super', 'epic', 'yay', 'woohoo', 'yes'];
+            if (excitingWords.some(word => lowerText.includes(word)) || (text.match(/!/g) || []).length > 0) {
+                return 'fun';
+            }
+            
+            // Deep thinking topics that make BMO contemplative
+            const thoughtfulWords = ['philosophy', 'meaning', 'purpose', 'universe', 'existence', 'consciousness', 'soul', 'deep', 'profound', 'complex', 'difficult', 'wonder', 'ponder'];
+            if (thoughtfulWords.some(word => lowerText.includes(word))) {
+                return 'thinking';
+            }
+            
+            // Learning/curiosity - but only for genuinely complex topics
+            const learningWords = ['how does', 'why does', 'what causes', 'explain', 'understand', 'learn about', 'tell me about', 'science', 'history', 'math'];
+            if (learningWords.some(word => lowerText.includes(word))) {
+                return 'interested';
+            }
+            
+            // Simple questions with obvious positive answers should be happy/fun
+            const simplePositiveQuestions = ['are.*good', 'are.*tasty', 'are.*fun', 'do you like', 'is.*nice', 'is.*good', 'is.*fun'];
+            if (simplePositiveQuestions.some(pattern => new RegExp(pattern).test(lowerText))) {
+                return 'happy';
+            }
+            
+            // Default: BMO is optimistic and happy!
+            return 'happy';
+        }
+
+        function clearInput() {
+            document.getElementById('textInput').value = '';
+            setEmotion('happy');
+        }
+
+        // Allow Enter key to analyze (Ctrl+Enter for newline in textarea)
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.ctrlKey) {
+                e.preventDefault();
+                analyzeSentiment();
+            }
+        });
+
+        // Initialize with happy emotion
+        setEmotion('happy');
+    </script>
+</body>
+</html>
